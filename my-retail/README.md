@@ -1,6 +1,14 @@
+### Install all Dependencies
+
+    npm install .
+
 ### Start the dev Server
     
     npm run start-dev
+
+### Run Test Cases(Not good enough)
+
+    npm test
 
 ### Thinks to consider (Not done part of this exercise)
 
