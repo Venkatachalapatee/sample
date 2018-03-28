@@ -1,15 +1,16 @@
 const graphql = require('graphql');
 const fetch = require('node-fetch');
-const infoToProjection = require('graphql-mongodb-projection');
+const mongodbProjections = require('graphql-mongodb-projection');
+
 const config = require('./config');
 const mongodb = require('mongodb');
 const mongoClient = mongodb.MongoClient;
 let url = `mongodb://${config.mongodb.host}:${config.mongodb.port}`;
 
-function getPriceInformation(id, callback) {
+function getPriceInformation(id, info, callback) {
     mongoClient.connect(url, function (err, client) {
-        var db = client.db(config.mongodb.db);
-        return db.collection('ProductPriceInformation').findOne({'id': id}).then(json => {
+        let db = client.db(config.mongodb.db);
+        return db.collection('ProductPriceInformation').findOne({'id': id}, mongodbProjections.default(info)).then(json => {
             client.close(false);
             callback(err, json);
         })
@@ -109,11 +110,11 @@ const root = new graphql.GraphQLObjectType({
                         .then(res => res.json())
                         .then(json => json),
                     'priceInformation': new Promise(function (resolve, reject) {
-                        getPriceInformation(args.id, function (err, data) {
+                        getPriceInformation(args.id, info, function (err, data) {
                             console.log(data);
                             if (err) {
                                 reject(err);
-                            } else if(!data){
+                            } else if (!data) {
                                 reject(Error('data not found'));
                             } else {
                                 resolve(data);
