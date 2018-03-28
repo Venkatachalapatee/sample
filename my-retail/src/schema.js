@@ -7,7 +7,12 @@ const ProductBasicInformationType = new graphql.GraphQLObjectType({
     fields: () => ({
         name: {
             type: new graphql.GraphQLNonNull(graphql.GraphQLString),
-        }
+            resolve: (productBasicInformation) => {
+                console.log(productBasicInformation);
+                return 'basic';
+            }
+        },
+
     })
 });
 
@@ -36,17 +41,18 @@ const ProductPriceInformationType = new graphql.GraphQLObjectType({
 });
 
 const ProductInformationType = new graphql.GraphQLObjectType({
-   name:'ProductInformation',
-   description:'',
-    fields:()=>({
-        productBasicInformation:{
-            type:ProductBasicInformationType
+    name: 'ProductInformation',
+    description: '',
+    fields: () => ({
+        basicInformation: {
+            type: ProductBasicInformationType
         },
-        productPriceInformation:{
-            type:ProductPriceInformationType
+        priceInformation: {
+            type: ProductPriceInformationType
         }
     })
 });
+
 const root = new graphql.GraphQLObjectType({
     name: 'Root',
     description: '',
@@ -75,13 +81,20 @@ const root = new graphql.GraphQLObjectType({
                     .then(res => res.json())
                     .then(json => json)
         },
-        productInformation:{
+        productInformation: {
             type: ProductInformationType,
             args: {
                 id: {
                     type: new graphql.GraphQLNonNull(graphql.GraphQLString)
                 }
             },
+            resolve: (root, args) => {
+                return {
+                    'basicInformation': fetch(`https://redsky.target.com/v2/pdp/tcin/${args.id}`)
+                        .then(res => res.json())
+                        .then(json => json)
+                }
+            }
         }
     })
 
