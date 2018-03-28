@@ -38,7 +38,7 @@ const ProductPriceInformationType = new graphql.GraphQLObjectType({
             type: new graphql.GraphQLNonNull(graphql.GraphQLString)
         },
         current_price: {
-            type: new graphql.GraphQLObjectType({
+            type: new graphql.GraphQLNonNull(new graphql.GraphQLObjectType({
                 name: 'CurrentPrice',
                 description: '',
                 fields: () => ({
@@ -49,7 +49,7 @@ const ProductPriceInformationType = new graphql.GraphQLObjectType({
                         type: new graphql.GraphQLNonNull(graphql.GraphQLString)
                     }
                 })
-            }),
+            })),
         }
     })
 });
@@ -109,13 +109,15 @@ const root = new graphql.GraphQLObjectType({
                         .then(json => json),
                     'priceInformation': new Promise(function (resolve, reject) {
                         getPriceInformation(args.id, function (err, data) {
+                            console.log(data);
                             if (err) {
                                 reject(err);
+                            } else if(!data){
+                                reject(Error('data not found'));
                             } else {
                                 resolve(data);
                             }
                         });
-
                     })
                 }
             }
