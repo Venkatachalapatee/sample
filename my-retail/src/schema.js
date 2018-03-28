@@ -10,6 +10,7 @@ function getPriceInformation(id, callback) {
     mongoClient.connect(url, function (err, client) {
         var db = client.db(config.mongodb.db);
         return db.collection('ProductPriceInformation').findOne({'id': id}).then(json => {
+            client.close(false);
             callback(err, json);
         })
     })
