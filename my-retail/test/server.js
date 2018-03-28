@@ -11,7 +11,7 @@ const client = clients.createJsonClient({
 
 describe("GET Product Price Information", function () {
     it("Should respond Price Information Object", function (done) {
-        var relative = "/graphql?query={productInformation(id:\"13860428\"){priceInformation{id,current_price{value,currency_code}}}}";
+        let relative = "/graphql?query={productInformation(id:\"13860428\"){priceInformation{id,current_price{value,currency_code}}}}";
         client.get(relative, function (err, req, res) {
             if (err) {
                 done(err);
@@ -37,7 +37,7 @@ describe("GET Product Price Information", function () {
     });
 
     it("Should respond with errors", function (done) {
-        var relative = "/graphql?query={productInformation(id:\"1386042\"){priceInformation{id,current_price{value,currency_code}}}}";
+        let relative = "/graphql?query={productInformation(id:\"1386042\"){priceInformation{id,current_price{value,currency_code}}}}";
         client.get(relative, function (err, req, res) {
             if (err) {
                 done(err);
