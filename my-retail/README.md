@@ -1,3 +1,7 @@
+### Start the dev Server
+    
+    npm run start-dev
+
 ### Thinks to consider (Not done part of this exercise)
 
 #### Build Process
