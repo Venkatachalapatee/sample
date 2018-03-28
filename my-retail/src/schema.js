@@ -1,5 +1,19 @@
 const graphql = require('graphql');
 const fetch = require('node-fetch');
+const infoToProjection = require('graphql-mongodb-projection');
+const config = require('./config');
+const mongodb = require('mongodb');
+const mongoClient = mongodb.MongoClient;
+let url = `mongodb://${config.mongodb.host}:${config.mongodb.port}`;
+
+function getPriceInformation(id, callback) {
+    mongoClient.connect(url, function (err, client) {
+        var db = client.db(config.mongodb.db);
+        return db.collection('ProductPriceInformation').findOne({'id': id}).then(json => {
+            callback(err, json);
+        })
+    })
+}
 
 const ProductBasicInformationType = new graphql.GraphQLObjectType({
     name: 'ProductBasicInformation',
@@ -35,7 +49,7 @@ const ProductPriceInformationType = new graphql.GraphQLObjectType({
                         type: new graphql.GraphQLNonNull(graphql.GraphQLString)
                     }
                 })
-            })
+            }),
         }
     })
 });
@@ -88,17 +102,25 @@ const root = new graphql.GraphQLObjectType({
                     type: new graphql.GraphQLNonNull(graphql.GraphQLString)
                 }
             },
-            resolve: (root, args) => {
+            resolve(root, args, ctx, info) {
                 return {
                     'basicInformation': fetch(`https://redsky.target.com/v2/pdp/tcin/${args.id}`)
                         .then(res => res.json())
-                        .then(json => json)
+                        .then(json => json),
+                    'priceInformation': new Promise(function (resolve, reject) {
+                        getPriceInformation(args.id, function (err, data) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(data);
+                            }
+                        });
+
+                    })
                 }
             }
         }
     })
-
-
 });
 
 module.exports = new graphql.GraphQLSchema({
