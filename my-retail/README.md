@@ -1,6 +1,7 @@
 TODO:
 
 - [ ] Validate the data before mutations. 
+- [ ] Bulk mutations. 
 - [ ] Adding Delete and Modify functionality
 - [ ] Add Test Cases for mutations.
 - [ ] Increase test coverage
