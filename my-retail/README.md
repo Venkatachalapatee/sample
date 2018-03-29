@@ -1,3 +1,10 @@
+TODO:
+
+- [ ] Adding Delete and Modify functionality
+- [ ] Add Test Cases for mutations.
+- [ ] Increase code coverage
+
+
 ### Install all Dependencies
 
     npm install .
