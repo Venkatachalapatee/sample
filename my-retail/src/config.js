@@ -1,6 +1,6 @@
 const config = {
     mongodb: {
-        host: "192.168.99.100",
+        host: process.env.MONGODB_HOST,
         port: 27017,
         db: "target-myretail"
     }
