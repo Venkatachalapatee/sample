@@ -14,10 +14,28 @@ function getPriceInformation(id, info, callback) {
         }
         else {
             let db = client.db(config.mongodb.db);
-            return db.collection('ProductPriceInformation').findOne({"id": id}, mongodbProjections.default(info)).then(json => {
+            return db.collection('ProductPriceInformation').findOne({"_id": id}, mongodbProjections.default(info)).then(json => {
                 client.close(false);
                 callback(err, json);
             })
+        }
+    })
+}
+
+function insertPriceInformation(args, callback) {
+    mongoClient.connect(url, function (err, client) {
+        if (err) {
+            callback(err);
+        }
+        else {
+            let db = client.db(config.mongodb.db);
+            return db.collection('ProductPriceInformation').insertOne({
+                _id: args.id,
+                current_price:args.current_price
+            }, function (err, data) {
+                client.close(false);
+                callback(err, data);
+            });
         }
     })
 }
@@ -47,7 +65,9 @@ const ProductPriceInformationType = new graphql.GraphQLObjectType({
     description: '',
     fields: () => ({
         id: {
-            type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+            type: new graphql.GraphQLNonNull(graphql.GraphQLString),
+            resolve: (productPriceInformation) => productPriceInformation._id
+
         },
         current_price: {
             type: new graphql.GraphQLNonNull(new graphql.GraphQLObjectType({
@@ -83,13 +103,40 @@ const mutation = new graphql.GraphQLObjectType({
     name: 'Mutation',
     description: '',
     fields: () => ({
-        productInformation: {
-            type: ProductInformationType,
+        addProductPriceInformation: {
+            type: ProductPriceInformationType,
             args: {
                 id: {
                     type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+                },
+                current_price: {
+                    type: new graphql.GraphQLNonNull(new graphql.GraphQLInputObjectType({
+                        name: 'CurrentPrice1',
+                        description: '',
+                        fields: () => ({
+                            value: {
+                                type: new graphql.GraphQLNonNull(graphql.GraphQLFloat)
+                            },
+                            currency_code: {
+                                type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+                            }
+                        })
+                    })),
                 }
-            }
+            },
+            resolve: (root, args, ctx, info) =>new Promise(function (resolve, reject) {
+                console.log(args);
+                insertPriceInformation(args, function (err, data) {
+                    console.log(data);
+                    if (err) {
+                        reject(err);
+                    } else if (!data) {
+                        reject(Error('data not found'));
+                    } else if(data.insertedCount === 1) {
+                        resolve(data.ops[0]);
+                    }
+                })
+            })
         }
     })
 });
@@ -117,10 +164,19 @@ const root = new graphql.GraphQLObjectType({
                     type: new graphql.GraphQLNonNull(graphql.GraphQLString)
                 }
             },
-            resolve: (root, args) =>
-                fetch(`https://redsky.target.com/v2/pdp/tcin/${args.id}`)
-                    .then(res => res.json())
-                    .then(json => json)
+            resolve :(root, args, ctx, info) =>
+                new Promise(function (resolve, reject) {
+                    getPriceInformation(args.id, info, function (err, data) {
+                        console.log(data);
+                        if (err) {
+                            reject(err);
+                        } else if (!data) {
+                            reject(Error('data not found'));
+                        } else {
+                            resolve(data);
+                        }
+                    });
+                })
         },
         productInformation: {
             type: ProductInformationType,
@@ -154,6 +210,6 @@ const root = new graphql.GraphQLObjectType({
 
 module.exports = new graphql.GraphQLSchema({
     query: root,
-    mutation:mutation
+    mutation: mutation
 
 });
