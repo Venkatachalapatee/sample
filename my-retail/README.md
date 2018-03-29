@@ -2,6 +2,10 @@
 
     npm install .
 
+### Set the Environment Variable
+    
+    set MONGODB_HOST=192.168.99.100
+
 ### Start the dev Server
     
     npm run start-dev
