@@ -9,11 +9,16 @@ let url = `mongodb://${config.mongodb.host}:${config.mongodb.port}`;
 
 function getPriceInformation(id, info, callback) {
     mongoClient.connect(url, function (err, client) {
-        let db = client.db(config.mongodb.db);
-        return db.collection('ProductPriceInformation').findOne({'id': id}, mongodbProjections.default(info)).then(json => {
-            client.close(false);
-            callback(err, json);
-        })
+        if (err) {
+            callback(err);
+        }
+        else {
+            let db = client.db(config.mongodb.db);
+            return db.collection('ProductPriceInformation').findOne({"id": id}, mongodbProjections.default(info)).then(json => {
+                client.close(false);
+                callback(err, json);
+            })
+        }
     })
 }
 
@@ -22,10 +27,15 @@ const ProductBasicInformationType = new graphql.GraphQLObjectType({
     description: '',
     fields: () => ({
         name: {
-            type: new graphql.GraphQLNonNull(graphql.GraphQLString),
+            type: graphql.GraphQLString,
             resolve: (productBasicInformation) => {
-                console.log(productBasicInformation);
-                return 'basic';
+                if (productBasicInformation && productBasicInformation.product &&
+                    productBasicInformation.product.item &&
+                    productBasicInformation.product.item.product_classification &&
+                    productBasicInformation.product.item.product_classification.item_type_name)
+                    return productBasicInformation.product.item.product_classification.item_type_name;
+                else
+                    return null;
             }
         },
 
@@ -65,6 +75,21 @@ const ProductInformationType = new graphql.GraphQLObjectType({
         },
         priceInformation: {
             type: ProductPriceInformationType
+        }
+    })
+});
+
+const mutation = new graphql.GraphQLObjectType({
+    name: 'Mutation',
+    description: '',
+    fields: () => ({
+        productInformation: {
+            type: ProductInformationType,
+            args: {
+                id: {
+                    type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+                }
+            }
         }
     })
 });
@@ -128,5 +153,7 @@ const root = new graphql.GraphQLObjectType({
 });
 
 module.exports = new graphql.GraphQLSchema({
-    query: root
+    query: root,
+    mutation:mutation
+
 });
