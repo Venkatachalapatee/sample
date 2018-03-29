@@ -1,8 +1,9 @@
 TODO:
 
+- [ ] Validate the data before mutations. 
 - [ ] Adding Delete and Modify functionality
 - [ ] Add Test Cases for mutations.
-- [ ] Increase code coverage
+- [ ] Increase test coverage
 
 
 ### Install all Dependencies
