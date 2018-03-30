@@ -128,7 +128,7 @@ const mutation = new graphql.GraphQLObjectType({
                 },
                 current_price: {
                     type: new graphql.GraphQLNonNull(new graphql.GraphQLInputObjectType({
-                        name: 'CurrentPrice2',
+                        name: 'UpdatedCurrentPrice',
                         description: '',
                         fields: () => ({
                             value: {
@@ -166,7 +166,7 @@ const mutation = new graphql.GraphQLObjectType({
                 },
                 current_price: {
                     type: new graphql.GraphQLNonNull(new graphql.GraphQLInputObjectType({
-                        name: 'CurrentPrice1',
+                        name: 'WithCurrentPrice',
                         description: '',
                         fields: () => ({
                             value: {
