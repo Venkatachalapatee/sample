@@ -31,8 +31,25 @@ function insertPriceInformation(args, callback) {
             let db = client.db(config.mongodb.db);
             return db.collection('ProductPriceInformation').insertOne({
                 _id: args.id,
-                current_price:args.current_price
+                current_price: args.current_price
             }, function (err, data) {
+                client.close(false);
+                callback(err, data);
+            });
+        }
+    })
+}
+
+function updatePriceInformation(args, callback) {
+    mongoClient.connect(url, function (err, client) {
+        if (err) {
+            callback(err);
+        }
+        else {
+            let db = client.db(config.mongodb.db);
+            return db.collection('ProductPriceInformation').updateOne({
+                _id: args.id,
+            }, {$set: {current_price: args.current_price}}, function (err, data) {
                 client.close(false);
                 callback(err, data);
             });
@@ -103,6 +120,44 @@ const mutation = new graphql.GraphQLObjectType({
     name: 'Mutation',
     description: '',
     fields: () => ({
+        updateProductPriceInformation: {
+            type: ProductPriceInformationType,
+            args: {
+                id: {
+                    type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+                },
+                current_price: {
+                    type: new graphql.GraphQLNonNull(new graphql.GraphQLInputObjectType({
+                        name: 'CurrentPrice2',
+                        description: '',
+                        fields: () => ({
+                            value: {
+                                type: new graphql.GraphQLNonNull(graphql.GraphQLFloat)
+                            },
+                            currency_code: {
+                                type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+                            }
+                        })
+                    })),
+                }
+            },
+            resolve: (root, args, ctx, info) => new Promise(function (resolve, reject) {
+                console.log(args);
+                updatePriceInformation(args, function (err, data) {
+                    console.log(data);
+                    if (err) {
+                        reject(err);
+                    } else if (!data) {
+                        reject(Error('data not found'));
+                    } else if (data.result.ok === 1) {
+                        //TODO: Change the Type of the Result to Some Status Object and Return the Status
+                        resolve({_id: args.id, current_price: args.current_price});
+                    }else{
+                        reject(Error(data.result));
+                    }
+                })
+            })
+        },
         addProductPriceInformation: {
             type: ProductPriceInformationType,
             args: {
@@ -124,7 +179,7 @@ const mutation = new graphql.GraphQLObjectType({
                     })),
                 }
             },
-            resolve: (root, args, ctx, info) =>new Promise(function (resolve, reject) {
+            resolve: (root, args, ctx, info) => new Promise(function (resolve, reject) {
                 console.log(args);
                 insertPriceInformation(args, function (err, data) {
                     console.log(data);
@@ -132,7 +187,7 @@ const mutation = new graphql.GraphQLObjectType({
                         reject(err);
                     } else if (!data) {
                         reject(Error('data not found'));
-                    } else if(data.insertedCount === 1) {
+                    } else if (data.insertedCount === 1) {
                         resolve(data.ops[0]);
                     }
                 })
@@ -164,7 +219,7 @@ const root = new graphql.GraphQLObjectType({
                     type: new graphql.GraphQLNonNull(graphql.GraphQLString)
                 }
             },
-            resolve :(root, args, ctx, info) =>
+            resolve: (root, args, ctx, info) =>
                 new Promise(function (resolve, reject) {
                     getPriceInformation(args.id, info, function (err, data) {
                         console.log(data);
