@@ -2,7 +2,7 @@ package com.target.myretailjava.data;
 
 import org.springframework.data.mongodb.core.mapping.Field;
 
-public class current_price{
+public class CurrentPrice {
     @Field
     private float value;
 

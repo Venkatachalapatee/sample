@@ -1,26 +1,27 @@
 package com.target.myretailjava.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.web.bind.annotation.Mapping;
 
 public class ProductPriceInformation {
     @Id
     private String id;
 
     @Field
-    private current_price current_price;
+    @JsonProperty("current_price")
+    private CurrentPrice current_price;
 
     public ProductPriceInformation(String id) {
         this.id = id;
     }
 
-    public current_price getCurrentPrice() {
+    public CurrentPrice getCurrent_price() {
         return current_price;
     }
 
-    public void setCurrentPrice(current_price currentPrice) {
-        current_price = currentPrice;
+    public void setCurrent_price(CurrentPrice current_price) {
+        this.current_price = current_price;
     }
 
     public String getId() {
