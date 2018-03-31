@@ -1,4 +1,5 @@
 .mvn/
 .idea/
 *.iml
+!src
 target/
