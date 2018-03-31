@@ -6,7 +6,7 @@ const config = require('./config');
 const mongodb = require('mongodb');
 const mongoClient = mongodb.MongoClient;
 let url = `mongodb://${config.mongodb.host}:${config.mongodb.port}`;
-
+const productPriceInformationCollectionName = 'productPriceInformation';
 function getPriceInformation(id, info, callback) {
     mongoClient.connect(url, function (err, client) {
         if (err) {
@@ -14,7 +14,7 @@ function getPriceInformation(id, info, callback) {
         }
         else {
             let db = client.db(config.mongodb.db);
-            return db.collection('ProductPriceInformation').findOne({"_id": id}, mongodbProjections.default(info)).then(json => {
+            return db.collection(productPriceInformationCollectionName).findOne({"_id": id}, mongodbProjections.default(info)).then(json => {
                 client.close(false);
                 callback(err, json);
             })
@@ -29,7 +29,7 @@ function insertPriceInformation(args, callback) {
         }
         else {
             let db = client.db(config.mongodb.db);
-            return db.collection('ProductPriceInformation').insertOne({
+            return db.collection(productPriceInformationCollectionName).insertOne({
                 _id: args.id,
                 current_price: args.current_price
             }, function (err, data) {
@@ -47,7 +47,7 @@ function updatePriceInformation(args, callback) {
         }
         else {
             let db = client.db(config.mongodb.db);
-            return db.collection('ProductPriceInformation').updateOne({
+            return db.collection(productPriceInformationCollectionName).updateOne({
                 _id: args.id,
             }, {$set: {current_price: args.current_price}}, function (err, data) {
                 client.close(false);
